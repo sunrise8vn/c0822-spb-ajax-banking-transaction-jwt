@@ -49,9 +49,9 @@
                 <div class="cont_form_login">
                     <a href="#" onclick="ocultar_login_sign_up()"><i class="material-icons">&#xE5C4;</i></a>
                     <h2>LOGIN</h2>
-                    <input type="text" placeholder="Email"/>
-                    <input type="password" placeholder="Password"/>
-                    <button class="btn_login" onclick="cambiar_login()">LOGIN</button>
+                    <input type="text" id="usernameLog" placeholder="Username"/>
+                    <input type="password" id="passwordLog" placeholder="Password"/>
+                    <button id="btnLogin" class="btn_login" onclick="cambiar_login()">LOGIN</button>
                 </div>
 
                 <div class="cont_form_sign_up">
@@ -71,6 +71,7 @@
     </div>
 </div>
 
+    <script src="/assets/jquery/v3.6.3/jquery-3.6.3.min.js"></script>
 
 <script>
     /* ------------- Click on login and Sign Up to  change and view the effect ------------------ */
@@ -114,6 +115,34 @@
             document.querySelector('.cont_form_login').style.display = "none";
         }, 500);
     }
+
+    $('#btnLogin').on('click', () => {
+        let username = $('#usernameLog').val();
+        let password = $('#passwordLog').val();
+
+        let obj = {
+            username,
+            password
+        }
+
+        $.ajax({
+            headers: {
+                'accept': 'application/json',
+                'content-type': 'application/json'
+            },
+            type: 'POST',
+            url: 'http://localhost:8093/api/auth/login',
+            data: JSON.stringify(obj)
+        })
+            .done((data) => {
+                console.log(data);
+                location.href = '/customers';
+            })
+            .fail((jqXHR) => {
+                console.log(jqXHR)
+            })
+
+    })
 
 </script>
 </body>

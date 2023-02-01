@@ -28,6 +28,10 @@
                     <i class="fas fa-plus"></i>
                     Create
                 </button>
+                <button type="button" id="btnLogout" class="btn btn-outline-light">
+                    <i class="far fa-sign-out"></i>
+                    Logout
+                </button>
             </div>
         </div>
     </header>
@@ -299,7 +303,8 @@
             getAllRecipientsWithOutSender: AppBase.API_CUSTOMER + '/get-all-recipients-with-out-sender',
             doCreateCustomer: AppBase.API_CUSTOMER,
             doDeposit: AppBase.API_CUSTOMER + '/deposit',
-            doTransfer: AppBase.API_CUSTOMER + '/transfer'
+            doTransfer: AppBase.API_CUSTOMER + '/transfer',
+            doDelete: AppBase.API_CUSTOMER + '/delete'
         }
     }
 
@@ -563,8 +568,8 @@
                             "accept": "application/json",
                             "content-type": "application/json"
                         },
-                        type: "PATCH",
-                        url: "http://localhost:3300/customers/" + customerId,
+                        type: "DELETE",
+                        url: page.urls.doDelete + '/' + customerId,
                         data: JSON.stringify(customer)
                     })
                         .done((data) => {
@@ -960,6 +965,9 @@
     }, "Vui lòng nhập Email hợp lệ");
 
 
+    $('#btnLogout').on('click', () => {
+        location.href = '/logout';
+    })
 
 </script>
 

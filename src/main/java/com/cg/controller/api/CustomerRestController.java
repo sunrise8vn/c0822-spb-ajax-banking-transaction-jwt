@@ -13,6 +13,7 @@ import com.cg.utils.AppUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -198,5 +199,22 @@ public class CustomerRestController {
         result.put("recipient", recipientDTO);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{customerId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    public ResponseEntity<?> doDelete(@PathVariable Long customerId) {
+
+        Optional<Customer> customerOptional = customerService.findById(customerId);
+
+        if (!customerOptional.isPresent()) {
+            throw new DataInputException("Customer invalid");
+        }
+
+        Customer customer = customerOptional.get();
+        customer.setDeleted(true);
+        customerService.save(customer);
+
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 }
