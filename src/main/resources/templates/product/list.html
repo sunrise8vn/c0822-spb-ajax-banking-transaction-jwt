@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>List of products</title>
+    <link rel="stylesheet" href="/assets/bootstrap/v5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/sweetalert2/v11.7.0/sweetalert2.min.css">
+    <link rel="stylesheet" href="/assets/fontawesome/v5.15.4/css/all.min.css"/>
+    <link rel="stylesheet" href="/assets/css/preview-image.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+
+        <header>
+            <div class="row">
+                <div class="col-sm-5">
+                    <h1>List of products</h1>
+                </div>
+                <div class="col-sm-7">
+                    <a class="btn btn-outline-light create-modal">
+                        <i class="fa fa-plus-square-o" aria-hidden="true"></i>
+                        <span> Add New Product</span>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="box-body">
+
+<!--            <th:block th:include="frm_list_table"/>-->
+
+            <th:block th:include="product/modalCreate :: modalCreate"/>
+
+            <input type="hidden" id="currentRow"/>
+
+            <table id="tbListProducts" class="table table-hover">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Avatar</th>
+                    <th>Title</th>
+                    <th>Price</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="loader hide"></div>
+
+    <script src="/assets/jquery/v3.6.3/jquery-3.6.3.min.js"></script>
+    <script src="/assets/jquery-validate/v1.19.5/jquery.validate.min.js"></script>
+    <script src="/assets/bootstrap/v5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/sweetalert2/v11.7.0/sweetalert2.min.js"></script>
+    <script src="/assets/js/appBase.js"></script>
+
+    <script>
+        let page = {
+            urls: {
+                // getAllProducts: App.BASE_URL_PRODUCT,
+                doSave: AppBase.BASE_URL_PRODUCT,
+                // doDelete: App.BASE_URL_PRODUCT + "/delete/"
+            },
+            element: {},
+            commands: {},
+            loadData: {},
+            dialogs: {
+                elements: {},
+                commands: {}
+            }
+        }
+
+        page.element.loader = $(".loader");
+        page.element.tempProduct = $("#tempProduct");
+        page.element.currentRow = $("#currentRow");
+        page.element.btnShowCreateModal = $("a.create-modal");
+
+        page.element.btnDelete = $("#tempProduct body");
+        page.element.btnSave = $("#btnSave");
+
+        page.element.frmListProduct = $("#tbListProducts tbody");
+
+        page.dialogs.elements.modalCreateProduct = $("#modalCreateProduct");
+        page.dialogs.elements.frmProduct = $("#frmProduct");
+
+        page.dialogs.elements.wrapper = $("section .wrapper");
+        page.dialogs.elements.productTitle = $("#productTitle");
+        page.dialogs.elements.productPrice = $("#productPrice");
+        page.dialogs.elements.description = $("#description");
+        page.dialogs.elements.imageFile = $("#imageFile");
+        page.dialogs.elements.wrapperContent = $("section .wrapper .content");
+        page.dialogs.elements.imagePreview = $("section .image-preview canvas");
+        page.dialogs.elements.canvas = $("#canvas");
+        page.dialogs.elements.context = page.dialogs.elements.canvas[0].getContext('2d');
+        page.dialogs.elements.imagePreview.css("display", "none");
+        page.dialogs.elements.divImagePreview = $("div.image-preview, div.file-name");
+        page.dialogs.elements.btnClearImagePreview = $(".clear-image-preview i");
+
+
+        page.commands.showCreateModal = () => {
+            page.dialogs.elements.modalCreateProduct.modal('show');
+        }
+
+        page.dialogs.commands.loadImageToCanvas = (imageFile) => {
+            page.dialogs.elements.imagePreview.css("display", "");
+            page.dialogs.elements.wrapper.addClass("active");
+            page.dialogs.elements.wrapperContent.css("opacity", 0);
+
+            let imageObj = new Image();
+
+            imageObj.onload = function () {
+                page.dialogs.elements.context.canvas.width = imageObj.width;
+                page.dialogs.elements.context.canvas.height = imageObj.height;
+                page.dialogs.elements.context.drawImage(imageObj, 0, 0, imageObj.width, imageObj.height);
+            };
+
+            imageObj.src = URL.createObjectURL(imageFile)
+        }
+
+        page.dialogs.commands.changeImagePreview = () => {
+            let imageFile = page.dialogs.elements.imageFile[0].files[0];
+
+            if (imageFile) {
+                let reader = new FileReader();
+
+                reader.readAsDataURL(imageFile);
+
+                reader.onload = function(e){
+                    if (e.target.readyState === FileReader.DONE) {
+                        page.dialogs.commands.loadImageToCanvas(imageFile);
+                    }
+                }
+            } else {
+                page.dialogs.elements.clearImagePreview();
+            }
+        }
+
+        page.dialogs.commands.createProduct = () => {
+            page.element.loader.removeClass("hide");
+            page.element.btnSave.prop('disabled', true);
+
+            let formData = new FormData();
+            formData.append("title", page.dialogs.elements.productTitle.val().toString());
+            formData.append("price", page.dialogs.elements.productPrice.val().toString());
+            formData.append("description", page.dialogs.elements.description.val().toString());
+            formData.append("file", page.dialogs.elements.imageFile[0].files[0]);
+
+            $.ajax({
+                type: "POST",
+                contentType: false,
+                cache: false,
+                processData: false,
+                url: page.urls.doSave,
+                data: formData
+            }).done((data) => {
+                console.log(data)
+                // product = data;
+
+                // page.commands.addRow();
+
+                AppBase.showSuccessAlert("Thêm sản phẩm thành công");
+
+                page.dialogs.elements.modalCreateProduct.modal('hide');
+
+            }).fail((err) => {
+                console.log(err)
+                AppBase.showErrorAlert("Thêm sản phẩm thất bại");
+            }).always(function () {
+                page.element.loader.addClass("hide");
+                page.element.btnSave.prop('disabled', false);
+            });
+        }
+
+        page.initializeControlEvent = () => {
+
+            page.element.btnShowCreateModal.on("click", function () {
+                page.commands.showCreateModal();
+            });
+
+            page.element.btnSave.on("click", function () {
+                page.dialogs.commands.createProduct();
+            });
+
+            page.dialogs.elements.divImagePreview.on("click", function () {
+                page.dialogs.elements.imageFile.trigger("click");
+            });
+
+            page.dialogs.elements.imageFile.on("change", function () {
+                page.dialogs.commands.changeImagePreview();
+            });
+
+            // page.dialogs.elements.btnClearImagePreview.on("click", function () {
+            //     page.dialogs.elements.clearImagePreview();
+            // });
+
+        }
+
+        $(() => {
+
+            // page.loadData.getAllProducts().then(function () {
+            //     page.initializeControlEvent();
+            // });
+
+            page.initializeControlEvent();
+
+        });
+    </script>
+</body>
+</html>
