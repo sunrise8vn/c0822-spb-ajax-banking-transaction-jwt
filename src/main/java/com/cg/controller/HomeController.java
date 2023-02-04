@@ -18,4 +18,9 @@ public class HomeController {
     public String showLoginPage() {
         return "login";
     }
+
+    @GetMapping("/shop")
+    public String showShoppingPage() {
+        return "shop/list";
+    }
 }

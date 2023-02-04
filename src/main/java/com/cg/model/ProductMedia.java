@@ -41,4 +41,8 @@ public class ProductMedia {
     @Column(columnDefinition = "BIGINT(20) DEFAULT 0")
     private Long ts = new Date().getTime();
 
+    @OneToOne
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    private Product product;
+
 }

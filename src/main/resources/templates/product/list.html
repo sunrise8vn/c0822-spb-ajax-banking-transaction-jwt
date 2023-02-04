@@ -62,7 +62,7 @@
     <script>
         let page = {
             urls: {
-                // getAllProducts: App.BASE_URL_PRODUCT,
+                getAllProducts: AppBase.BASE_URL_PRODUCT,
                 doSave: AppBase.BASE_URL_PRODUCT,
                 // doDelete: App.BASE_URL_PRODUCT + "/delete/"
             },
@@ -101,6 +101,24 @@
         page.dialogs.elements.divImagePreview = $("div.image-preview, div.file-name");
         page.dialogs.elements.btnClearImagePreview = $(".clear-image-preview i");
 
+
+        page.loadData.getAllProducts = () => {
+            $.ajax({
+                type: "GET",
+                url: page.urls.getAllProducts,
+            }).done((data) => {
+
+                $.each(data, (i, item) => {
+                    page.commands.renderProduct(item);
+                })
+
+            }).fail((err) => {
+                console.log(err)
+            }).always(function () {
+                page.element.loader.addClass("hide");
+                page.element.btnSave.prop('disabled', false);
+            });
+        }
 
         page.commands.showCreateModal = () => {
             page.dialogs.elements.modalCreateProduct.modal('show');
@@ -159,7 +177,7 @@
                 data: formData
             }).done((data) => {
                 console.log(data)
-                // product = data;
+                page.commands.renderProduct(data);
 
                 // page.commands.addRow();
 
@@ -174,6 +192,30 @@
                 page.element.loader.addClass("hide");
                 page.element.btnSave.prop('disabled', false);
             });
+        }
+
+        page.commands.renderProduct = (obj) => {
+            let cloudinaryServer = 'https://res.cloudinary.com/toanphat/image/upload';
+            let BASE_SCALE_IMAGE = "c_limit,w_150,h_100,q_100";
+            let folderName = obj.folderName;
+            let fileName = obj.fileName;
+
+            let avatarUrl = cloudinaryServer + '/' + BASE_SCALE_IMAGE + '/' + folderName + '/' + fileName;
+
+            let str = `
+                <tr>
+                    <td>${obj.id}</td>
+                    <td>
+                        <img src="${avatarUrl}" alt=""/>
+                    </td>
+                    <td>${obj.title}</td>
+                    <td>${obj.price}</td>
+                    <td>${obj.description}</td>
+                    <td>Edit</td>
+                </tr>
+            `;
+
+            page.element.frmListProduct.prepend(str)
         }
 
         page.initializeControlEvent = () => {
@@ -201,7 +243,7 @@
         }
 
         $(() => {
-
+            page.loadData.getAllProducts();
             // page.loadData.getAllProducts().then(function () {
             //     page.initializeControlEvent();
             // });

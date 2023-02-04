@@ -1,5 +1,6 @@
 package com.cg.model.dto;
 
+import com.cg.model.Product;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +16,20 @@ import java.math.BigDecimal;
 @Setter
 public class ProductCreateDTO {
 
+    private Long id;
     private String title;
     private BigDecimal price;
     private String description;
 
-    private MultipartFile file;
+
+    public Product toProduct() {
+        return new Product()
+                .setId(id)
+                .setTitle(title)
+                .setPrice(price)
+                .setDescription(description)
+                ;
+    }
 
     @Override
     public String toString() {
